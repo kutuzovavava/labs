@@ -1,0 +1,208 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+int my_isalpha(char s)
+{
+    if ((s >= 'A' && s <= 'Z') || (s >= 'a' && s <= 'z'))
+        return 1;
+    else
+        return 0;
+}
+int my_isdigit(char s)
+{
+    if (s >= '0' && s <= '9')
+        return 1;
+    else
+        return 0;
+}
+int my_issymbol(char s)
+{
+    if ((s > 32 && s <= 47) || (s >= 58 && s <= 64) || (s >= 91 && s <= 96) || (s >= 123))
+        return 1;
+    else
+        return 0;
+}
+char lower(char a){
+    if (a>='A' && a<='Z'){
+        char b=a+32;
+        return b;
+    }else{
+        return a;
+    }
+}
+char * to_asci(char c) {
+    char * res = (char*)malloc(5*sizeof(char));
+    if(res==NULL){
+        free(res);
+        return NULL;
+    }
+    sprintf(res, "%d", i);
+    return res;
+}
+void func_d(FILE *file, FILE *out)
+{
+    char sym;
+    while ((sym = fgetc(file)) != EOF)
+    {
+        if (!my_isdigit(sym))
+            //побайтовый вывод
+            fputc(sym, out);
+    }
+}
+int help_for_i(FILE *file, char sym)
+{
+    int count = 0;
+    while (sym != '\n')
+    {
+        if (sym == EOF)
+        {
+            return count;
+        }
+        else if (isalpha(sym))
+        {
+            count++;
+        }
+        //побайтовое чтение
+        sym = fgetc(file);
+    }
+    return count;
+}
+void func_i(FILE *file, FILE *out)
+{
+    char sym;
+    while ((sym = fgetc(file)) != EOF)
+    {
+        fprintf(out, "%d\n", help_for_i(file, sym));
+    }
+}
+int help_for_s(FILE *file, char sym)
+{
+    int count = 0;
+    while (sym != '\n')
+    {
+        if (sym == EOF)
+        {
+            return count;
+        }
+        else if (my_issymbol(sym))
+        {
+            count++;
+        }
+        sym = fgetc(file);
+    }
+    return count;
+}
+void func_s(FILE *file, FILE *out)
+{
+    char sym;
+    while ((sym = fgetc(file)) != EOF)
+    {
+        fprintf(out, "%d\n", help_for_s(file, sym));
+    }
+}
+void func_a(FILE *file, FILE *out)
+{
+    char sym;
+    while ((sym = fgetc(file)) != EOF)
+    {
+        if (!isdigit(sym))
+        {
+            fprintf(out, "%d", sym);
+        }
+        else
+        {
+            fprintf(out, "%c", sym);
+        }
+    }
+}
+void func_f(FILE *file, FILE *out)
+{
+    char sym;
+    int count = 1;
+    while ((sym = fgetc(file)) != EOF)
+    {
+        if (count%2!=0 && sym!=' ' && sym!='\n'){
+            if(my_isalpha(sym)){
+                fputc(lower(sym),out);
+            }else{
+                fputc(sym,out);
+            }
+        }else if(count%6==0 && sym!=' ' && sym!='\n'){
+            fprintf(out,"%d", sym);
+        }else{
+            fputc(sym,out);
+        }
+        if(sym == ' ' || sym == '\n'){
+            count+=1;
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc < 3 || argc > 4)
+    {
+        printf("invalid number of arguments");
+        return 0;
+    }
+    if (argv[1][0] != '-' && argv[1][0] != '/')
+    {
+        printf("incorrect flag format");
+        return -1;
+    }
+
+    char *name = argv[2];
+
+    FILE *file = fopen(name, "r");
+    FILE *fout;
+
+    if (file == NULL)
+    {
+        printf("the file could not be opened");
+        return -1;
+    }
+
+    if (argv[1][1] == 'n')
+    {
+        if (!argv[3])
+        {
+            printf("few arguments");
+            return -1;
+        }
+        fout = fopen(argv[3], "w");
+        if (fout == NULL)
+        {
+            printf("the file could not be opened");
+            return -1;
+        }
+    }
+    else
+    {
+        char path[1024] = "out_";
+        strcat(path, name);
+        fout = fopen(path, "w");
+        if (fout == NULL)
+        {
+            printf("the file could not be opened");
+            fclose(file);
+            return -1;
+        }
+    }
+    if (argv[1][1] == 'd' || argv[1][2] == 'd')
+        func_d(file, fout);
+    else if (argv[1][1] == 'i' || argv[1][2] == 'i')
+        func_i(file, fout);
+    else if (argv[1][1] == 's' || argv[1][2] == 's')
+        func_s(file, fout);
+    else if (argv[1][1] == 'a' || argv[1][2] == 'a')
+        func_a(file, fout);
+    else if (argv[1][1] == 'f' || argv[1][2] == 'f')
+        func_f(file, fout);
+    else
+        printf("wrong input");
+    fclose(file);
+    fclose(fout);
+
+    return 0;
+}
